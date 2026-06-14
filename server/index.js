@@ -9,20 +9,25 @@ const userRoutes = require('./routes/users');
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean),
+  credentials: true
+}));
 app.use(express.json());
 
 app.use('/api/logs', logRoutes);
 app.use('/api/insights', insightRoutes);
 app.use('/api/users', userRoutes);
 
-const PORT = process.env.PORT || 5000;
-
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => {
-  console.log('Connected to MongoDB Cloud Database!');
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-})
-.catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log('Connected to MongoDB Cloud Database!'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
+// Export the Express API for Vercel
+module.exports = app;
+
+// Only listen locally if not in Vercel
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running locally on port ${PORT}`));
+}

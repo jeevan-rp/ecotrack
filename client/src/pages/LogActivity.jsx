@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Sparkles, Save, Info } from 'lucide-react';
 import { useUser } from '@clerk/clerk-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function LogActivity() {
   const { user } = useUser();
   const [naturalText, setNaturalText] = useState('');
@@ -16,7 +18,7 @@ export default function LogActivity() {
     setSuccess(false);
 
     try {
-      const response = await fetch('http://localhost:5000/api/logs', {
+      const response = await fetch(`${API_URL}/api/logs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

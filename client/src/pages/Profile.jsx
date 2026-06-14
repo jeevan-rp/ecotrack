@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { Target, Award, Flame, Edit2, Check, X, Camera } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Profile() {
   const { user } = useUser();
   const [profileData, setProfileData] = useState(null);
@@ -16,7 +18,7 @@ export default function Profile() {
   useEffect(() => {
     if (user) {
       // Sync or fetch profile
-      fetch('http://localhost:5000/api/users/sync', {
+      fetch(`${API_URL}/api/users/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -38,7 +40,7 @@ export default function Profile() {
 
   const updateBudget = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${user.id}/budget`, {
+      const res = await fetch(`${API_URL}/api/users/${user.id}/budget`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ weeklyBudget: Number(budgetInput) })
@@ -66,7 +68,7 @@ export default function Profile() {
 
   const saveProfile = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${user.id}/profile`, {
+      const res = await fetch(`${API_URL}/api/users/${user.id}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editName, pfp: editPfp })

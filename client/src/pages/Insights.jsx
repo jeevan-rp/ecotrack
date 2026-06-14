@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useUser } from '@clerk/clerk-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Insights() {
   const { user } = useUser();
   const [insights, setInsights] = useState([]);
@@ -12,7 +14,7 @@ export default function Insights() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/insights/${user.id}`);
+      const res = await fetch(`${API_URL}/api/insights/${user.id}`);
       if (res.ok) {
         const data = await res.json();
         setInsights(data);
@@ -28,7 +30,7 @@ export default function Insights() {
     if (!user) return;
     setIsGenerating(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/insights/generate/${user.id}`, {
+      const res = await fetch(`${API_URL}/api/insights/generate/${user.id}`, {
         method: 'POST'
       });
       if (res.ok) {

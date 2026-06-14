@@ -14,6 +14,8 @@ const getCategoryIcon = (category) => {
   }
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Dashboard() {
   const { user } = useUser();
   const [logs, setLogs] = useState([]);
@@ -29,9 +31,9 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const [logsRes, insightsRes, profileRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/logs/${userId}`),
-          fetch(`http://localhost:5000/api/insights/${userId}`),
-          fetch(`http://localhost:5000/api/users/${userId}`)
+          fetch(`${API_URL}/api/logs/${userId}`),
+          fetch(`${API_URL}/api/insights/${userId}`),
+          fetch(`${API_URL}/api/users/${userId}`)
         ]);
         
         if (logsRes.ok) {
@@ -64,7 +66,7 @@ export default function Dashboard() {
           setProfile(profileData);
         } else {
           // Sync profile if it doesn't exist
-          fetch('http://localhost:5000/api/users/sync', {
+          fetch(`${API_URL}/api/users/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
