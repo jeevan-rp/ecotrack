@@ -1,8 +1,16 @@
-import { Link } from 'react-router-dom';
-import { Leaf, LayoutDashboard, PlusCircle, Lightbulb, User } from 'lucide-react';
-import { UserButton } from '@clerk/clerk-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Leaf, LayoutDashboard, PlusCircle, Lightbulb, User as UserIcon, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navigation() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <nav className="glass-panel mx-2 sm:mx-4 mt-4 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 sticky top-4 z-50">
       <div className="flex items-center gap-2">
@@ -25,10 +33,21 @@ export default function Navigation() {
           <span className="hidden sm:inline">Insights</span>
         </Link>
         <Link to="/profile" className="flex items-center gap-1.5 hover:text-accent-green transition-colors">
-          <User className="w-4 h-4 sm:hidden" />
+          <UserIcon className="w-4 h-4 sm:hidden" />
           <span className="hidden sm:inline">Profile</span>
         </Link>
-        <UserButton afterSignOutUrl="/" />
+        <div className="flex items-center gap-3 border-l border-white/10 pl-4 sm:pl-6 ml-2 sm:ml-0">
+           {user?.pfp ? (
+             <img src={user.pfp} alt="Profile" className="w-8 h-8 rounded-full border border-accent-green object-cover" />
+           ) : (
+             <div className="w-8 h-8 rounded-full bg-accent-green/20 border border-accent-green flex items-center justify-center">
+               <UserIcon className="w-4 h-4 text-accent-green" />
+             </div>
+           )}
+           <button onClick={handleLogout} className="text-mint hover:text-red-400 transition-colors" title="Logout">
+             <LogOut className="w-5 h-5" />
+           </button>
+        </div>
       </div>
     </nav>
   );

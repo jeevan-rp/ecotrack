@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const logRoutes = require('./routes/logs');
 const insightRoutes = require('./routes/insights');
 const userRoutes = require('./routes/users');
+const authRoutes = require('./routes/auth');
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/logs', logRoutes);
 app.use('/api/insights', insightRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Cloud Database!'))

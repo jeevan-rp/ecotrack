@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const ActivityLog = require('../models/ActivityLog');
 const { GoogleGenAI } = require('@google/genai');
+const auth = require('../middleware/auth');
 
 const User = require('../models/User');
 
 async function processGamification(userId, logData) {
     try {
-        const user = await User.findOne({ authProviderId: userId });
+        const user = await User.findById(userId);
         if (!user) return;
 
         const now = new Date();
@@ -43,9 +44,10 @@ async function processGamification(userId, logData) {
 }
 
 // Add a log
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
-    const { userId, textInput } = req.body;
+    const { textInput } = req.body;
+    const userId = req.user.id;
 
     if (textInput) {
         // Natural language parsing with Gemini
@@ -69,9 +71,9 @@ router.post('/', async (req, res) => {
         await processGamification(userId, parsed);
         return res.status(201).json(log);
     } else {
-        const log = new ActivityLog(req.body);
+        const log = new ActivityLog({ ...req.body, userId });
         await log.save();
-        await processGamification(req.body.userId, req.body);
+        await processGamification(userId, req.body);
         res.status(201).json(log);
     }
   } catch (error) {
@@ -81,9 +83,9 @@ router.post('/', async (req, res) => {
 });
 
 // Get logs for user
-router.get('/:userId', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const logs = await ActivityLog.find({ userId: req.params.userId }).sort({ date: -1 });
+    const logs = await ActivityLog.find({ userId: req.user.id }).sort({ date: -1 });
     res.json(logs);
   } catch (error) {
     res.status(500).json({ message: error.message });

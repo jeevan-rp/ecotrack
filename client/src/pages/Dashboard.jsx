@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Zap, Car, Utensils, Zap as EnergyIcon, ShoppingBag, Target, Flame, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../utils/api';
 
 const getCategoryIcon = (category) => {
   switch(category) {
@@ -14,26 +15,24 @@ const getCategoryIcon = (category) => {
   }
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://ecotrack-back.vercel.app';
+
 
 export default function Dashboard() {
-  const { user } = useUser();
+  const { user, token } = useAuth();
   const [logs, setLogs] = useState([]);
   const [insight, setInsight] = useState(null);
-  const [profile, setProfile] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [totalEmissions, setTotalEmissions] = useState(0);
 
   useEffect(() => {
-    if (!user) return;
-    const userId = user.id;
+    if (!user || !token) return;
 
     const fetchData = async () => {
       try {
-        const [logsRes, insightsRes, profileRes] = await Promise.all([
-          fetch(`${API_URL}/api/logs/${userId}`),
-          fetch(`${API_URL}/api/insights/${userId}`),
-          fetch(`${API_URL}/api/users/${userId}`)
+        const headers = { 'Authorization': `Bearer ${token}` };
+        const [logsRes, insightsRes] = await Promise.all([
+          fetch(`${API_URL}/api/logs`, { headers }),
+          fetch(`${API_URL}/api/insights`, { headers })
         ]);
         
         if (logsRes.ok) {
@@ -61,21 +60,6 @@ export default function Dashboard() {
           if (insightsData.length > 0) setInsight(insightsData[0]);
         }
 
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          setProfile(profileData);
-        } else {
-          // Sync profile if it doesn't exist
-          fetch(`${API_URL}/api/users/sync`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              authProviderId: user.id,
-              email: user.primaryEmailAddress?.emailAddress,
-              name: user.fullName
-            })
-          }).then(res => res.json()).then(setProfile).catch(console.error);
-        }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
       }
@@ -84,7 +68,7 @@ export default function Dashboard() {
     fetchData();
   }, [user]);
 
-  const weeklyBudget = profile?.weeklyBudget || 50;
+  const weeklyBudget = user?.weeklyBudget || 50;
   const budgetPercentage = Math.min((totalEmissions / weeklyBudget) * 100, 100);
   const isOverBudget = totalEmissions > weeklyBudget;
 
@@ -92,7 +76,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <header className="mb-8">
         <h1 className="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-mint">
-          Welcome back, {user?.firstName}!
+          Welcome back, {user?.name}!
         </h1>
         <p className="text-mint">Track, analyze, and reduce your carbon footprint.</p>
       </header>
@@ -117,20 +101,20 @@ export default function Dashboard() {
           </div>
 
           {/* Gamification Stats */}
-          {profile && (
+          {user && (
             <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
-                <Flame className={`w-6 h-6 ${profile.currentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
+                <Flame className={`w-6 h-6 ${user.currentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
                 <div>
                   <div className="text-xs text-mint">Streak</div>
-                  <div className="font-bold">{profile.currentStreak} Days</div>
+                  <div className="font-bold">{user.currentStreak || 0} Days</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Award className="w-6 h-6 text-yellow-400" />
                 <div>
                   <div className="text-xs text-mint">Badges</div>
-                  <div className="font-bold">{profile.badges?.length || 0}</div>
+                  <div className="font-bold">{user.badges?.length || 0}</div>
                 </div>
               </div>
             </div>

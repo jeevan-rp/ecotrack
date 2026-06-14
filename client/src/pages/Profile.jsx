@@ -1,53 +1,33 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import React, { useState, useRef } from 'react';
 import { Target, Award, Flame, Edit2, Check, X, Camera } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://ecotrack-back.vercel.app';
+import { API_URL } from '../utils/api';
 
 export default function Profile() {
-  const { user } = useUser();
-  const [profileData, setProfileData] = useState(null);
-  const [budgetInput, setBudgetInput] = useState('');
+  const { user, setUser, token } = useAuth();
+  
+  const [budgetInput, setBudgetInput] = useState(user?.weeklyBudget || 50);
   
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editPfp, setEditPfp] = useState('');
+  const [editName, setEditName] = useState(user?.name || '');
+  const [editPfp, setEditPfp] = useState(user?.pfp || '');
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    if (user) {
-      // Sync or fetch profile
-      fetch(`${API_URL}/api/users/sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          authProviderId: user.id,
-          email: user.primaryEmailAddress?.emailAddress,
-          name: user.fullName
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        setProfileData(data);
-        setBudgetInput(data.weeklyBudget);
-        setEditName(data.name || user.fullName);
-        setEditPfp(data.pfp || '');
-      })
-      .catch(console.error);
-    }
-  }, [user]);
 
   const updateBudget = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/users/${user.id}/budget`, {
+      const res = await fetch(`${API_URL}/api/users/me/budget`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ weeklyBudget: Number(budgetInput) })
       });
       if (res.ok) {
         const data = await res.json();
-        setProfileData(data);
+        setUser(data);
         alert('Budget updated!');
       }
     } catch (err) {
@@ -68,14 +48,17 @@ export default function Profile() {
 
   const saveProfile = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/users/${user.id}/profile`, {
+      const res = await fetch(`${API_URL}/api/users/me/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ name: editName, pfp: editPfp })
       });
       if (res.ok) {
         const data = await res.json();
-        setProfileData(data);
+        setUser(data);
         setIsEditing(false);
       }
     } catch (err) {
@@ -83,10 +66,10 @@ export default function Profile() {
     }
   };
 
-  if (!user || !profileData) return <div className="text-center text-mint mt-10">Loading profile...</div>;
+  if (!user) return <div className="text-center text-mint mt-10">Loading profile...</div>;
 
-  const displayImage = profileData.pfp || user.imageUrl;
-  const displayName = profileData.name || user.fullName;
+  const displayImage = user.pfp;
+  const displayName = user.name;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 pb-10">
@@ -120,8 +103,8 @@ export default function Profile() {
               <button 
                 onClick={() => {
                   setIsEditing(false);
-                  setEditName(profileData.name || user.fullName);
-                  setEditPfp(profileData.pfp || '');
+                  setEditName(user.name || '');
+                  setEditPfp(user.pfp || '');
                 }}
                 className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors text-red-400"
                 title="Cancel"
@@ -133,11 +116,18 @@ export default function Profile() {
 
           <div className="flex items-center gap-4 mb-6 mt-2">
             <div className="relative group">
-              <img 
-                src={isEditing ? (editPfp || user.imageUrl) : displayImage} 
-                alt="Profile" 
-                className="w-20 h-20 rounded-full border-2 border-accent-green object-cover" 
-              />
+              {isEditing || displayImage ? (
+                <img 
+                  src={isEditing ? editPfp : displayImage} 
+                  alt="Profile" 
+                  className="w-20 h-20 rounded-full border-2 border-accent-green object-cover bg-forest-dark" 
+                />
+              ) : (
+                 <div className="w-20 h-20 rounded-full border-2 border-accent-green bg-accent-green/20 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-accent-green">{displayName?.charAt(0).toUpperCase()}</span>
+                 </div>
+              )}
+              
               {isEditing && (
                 <div 
                   className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
@@ -164,9 +154,9 @@ export default function Profile() {
                   placeholder="Your Name"
                 />
               ) : (
-                <h2 className="text-xl font-bold">{displayName}</h2>
+                <h2 className="text-xl font-bold">{displayName || 'Eco Warrior'}</h2>
               )}
-              <p className="text-sm text-mint mt-1">{user.primaryEmailAddress?.emailAddress}</p>
+              <p className="text-sm text-mint mt-1">{user.email}</p>
             </div>
           </div>
           
@@ -195,8 +185,8 @@ export default function Profile() {
         {/* Gamification Stats */}
         <div className="space-y-6">
           <div className="glass-panel p-6 flex flex-col items-center justify-center text-center">
-             <Flame className={`w-12 h-12 mb-2 ${profileData.currentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
-             <h3 className="text-2xl font-bold">{profileData.currentStreak} Days</h3>
+             <Flame className={`w-12 h-12 mb-2 ${user.currentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
+             <h3 className="text-2xl font-bold">{user.currentStreak || 0} Days</h3>
              <p className="text-mint">Current Logging Streak</p>
           </div>
 
@@ -204,11 +194,11 @@ export default function Profile() {
              <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
                <Award className="w-5 h-5 text-yellow-400" /> Badges Earned
              </h3>
-             {profileData.badges.length === 0 ? (
+             {!user.badges || user.badges.length === 0 ? (
                <p className="text-sm text-mint">No badges yet. Keep logging to earn some!</p>
              ) : (
                <div className="flex flex-wrap gap-2">
-                 {profileData.badges.map((badge, idx) => (
+                 {user.badges.map((badge, idx) => (
                    <span key={idx} className="bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 text-xs font-bold px-3 py-1 rounded-full">
                      {badge}
                    </span>

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://ecotrack-back.vercel.app';
+import { API_URL } from '../utils/api';
 
 export default function Insights() {
-  const { user } = useUser();
+  const { user, token } = useAuth();
   const [insights, setInsights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -14,7 +14,9 @@ export default function Insights() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/insights/${user.id}`);
+      const res = await fetch(`${API_URL}/api/insights`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setInsights(data);
@@ -30,8 +32,9 @@ export default function Insights() {
     if (!user) return;
     setIsGenerating(true);
     try {
-      const res = await fetch(`${API_URL}/api/insights/generate/${user.id}`, {
-        method: 'POST'
+      const res = await fetch(`${API_URL}/api/insights/generate`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         fetchInsights();

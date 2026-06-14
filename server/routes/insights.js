@@ -3,10 +3,11 @@ const router = express.Router();
 const ActivityLog = require('../models/ActivityLog');
 const Insight = require('../models/Insight');
 const { GoogleGenAI } = require('@google/genai');
+const auth = require('../middleware/auth');
 
-router.post('/generate/:userId', async (req, res) => {
+router.post('/generate', auth, async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.user.id;
     const logs = await ActivityLog.find({ userId }).sort({ date: -1 }).limit(10);
     
     if (!logs.length) return res.status(400).json({ message: 'No logs to analyze' });
@@ -36,9 +37,9 @@ router.post('/generate/:userId', async (req, res) => {
   }
 });
 
-router.get('/:userId', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
-        const insights = await Insight.find({ userId: req.params.userId }).sort({ generatedAt: -1 });
+        const insights = await Insight.find({ userId: req.user.id }).sort({ generatedAt: -1 });
         res.json(insights);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  authProviderId: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
   name: { type: String },
-  email: { type: String },
   pfp: { type: String }, // Profile picture (base64 or URL)
   baselineFootprint: { type: Number, default: 0 },
   weeklyBudget: { type: Number, default: 50 },

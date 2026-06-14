@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Sparkles, Save, Info } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://ecotrack-back.vercel.app';
+import { API_URL } from '../utils/api';
 
 export default function LogActivity() {
-  const { user } = useUser();
+  const { user, token } = useAuth();
   const [naturalText, setNaturalText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -22,9 +22,9 @@ export default function LogActivity() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          userId: user.id,
           textInput: naturalText
         }),
       });
