@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { Target, Award, Flame, Edit2, Check, X, Camera } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://ecotrack-back.vercel.app';
 
 export default function Profile() {
   const { user } = useUser();

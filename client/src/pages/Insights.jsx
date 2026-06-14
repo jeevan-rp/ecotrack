@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useUser } from '@clerk/clerk-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://ecotrack-back.vercel.app';
 
 export default function Insights() {
   const { user } = useUser();
