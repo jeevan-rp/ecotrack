@@ -4,6 +4,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const compression = require('compression');
 const logRoutes = require('./routes/logs');
 const insightRoutes = require('./routes/insights');
 const userRoutes = require('./routes/users');
@@ -18,12 +21,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Security Middlewares
+// Elite Security & Efficiency Middlewares
 app.use(helmet());
+app.use(mongoSanitize());
+app.use(xss());
+app.use(compression());
 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 app.use('/api/', apiLimiter);

@@ -32,3 +32,13 @@ div[style*="position: fixed"][style*="bottom: 16px"],
 div[style*="z-index: 99999"] {
   display: none !important;
 }
+
+/* Elite Accessibility: Global Focus Styles */
+a:focus-visible, 
+button:focus-visible, 
+input:focus-visible, 
+textarea:focus-visible {
+  outline: 3px solid var(--color-accent-green);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 255, 163, 0.4);
+}

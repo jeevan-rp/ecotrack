@@ -4,6 +4,9 @@ const ActivityLog = require('../models/ActivityLog');
 const Insight = require('../models/Insight');
 const { GoogleGenAI } = require('@google/genai');
 const auth = require('../middleware/auth');
+const NodeCache = require('node-cache');
+
+const cache = new NodeCache({ stdTTL: 60 });
 
 router.post('/generate', auth, async (req, res) => {
   try {
@@ -39,7 +42,15 @@ router.post('/generate', auth, async (req, res) => {
 
 router.get('/', auth, async (req, res) => {
     try {
+        const cacheKey = `insights_${req.user.id}`;
+        const cachedData = cache.get(cacheKey);
+        
+        if (cachedData) {
+            return res.json(cachedData);
+        }
+
         const insights = await Insight.find({ userId: req.user.id }).sort({ generatedAt: -1 });
+        cache.set(cacheKey, insights);
         res.json(insights);
     } catch (error) {
         res.status(500).json({ message: error.message });
