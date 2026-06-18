@@ -5,13 +5,16 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../utils/api';
 
+/**
+ * Helper to render the appropriate icon based on the category.
+ */
 const getCategoryIcon = (category) => {
   switch(category) {
-    case 'transport': return <Car className="text-mint w-5 h-5"/>;
-    case 'diet': return <Utensils className="text-mint w-5 h-5"/>;
-    case 'energy': return <EnergyIcon className="text-mint w-5 h-5"/>;
-    case 'shopping': return <ShoppingBag className="text-mint w-5 h-5"/>;
-    default: return <Zap className="text-mint w-5 h-5"/>;
+    case 'transport': return <Car className="text-gray-100 w-5 h-5" aria-hidden="true" />;
+    case 'diet': return <Utensils className="text-gray-100 w-5 h-5" aria-hidden="true" />;
+    case 'energy': return <EnergyIcon className="text-gray-100 w-5 h-5" aria-hidden="true" />;
+    case 'shopping': return <ShoppingBag className="text-gray-100 w-5 h-5" aria-hidden="true" />;
+    default: return <Zap className="text-gray-100 w-5 h-5" aria-hidden="true" />;
   }
 };
 
@@ -73,17 +76,17 @@ export default function Dashboard() {
   const isOverBudget = totalEmissions > weeklyBudget;
 
   return (
-    <div className="space-y-6">
+    <section className="space-y-6" aria-label="Dashboard Overview">
       <header className="mb-8">
-        <h1 className="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-mint">
+        <h1 className="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-200">
           Welcome back, {user?.name}!
         </h1>
-        <p className="text-mint">Track, analyze, and reduce your carbon footprint.</p>
+        <p className="text-gray-200">Track, analyze, and reduce your carbon footprint.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Progress & Quick Stats */}
-        <div className="glass-panel p-6 flex flex-col justify-center">
+        <article className="glass-panel p-6 flex flex-col justify-center">
           <div className="flex justify-between items-end mb-2">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Target className="w-5 h-5 text-accent-lime" /> Weekly Budget
@@ -119,10 +122,10 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-        </div>
+        </article>
 
         {/* Chart Panel */}
-        <div className="glass-panel p-6 md:col-span-2">
+        <article className="glass-panel p-6 md:col-span-2">
           <h3 className="text-lg font-semibold mb-4">Emissions Trend</h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -143,15 +146,15 @@ export default function Dashboard() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </article>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {/* Recent Activity */}
-        <div className="glass-panel p-6">
+        <article className="glass-panel p-6">
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
           {logs.length === 0 ? (
-            <p className="text-mint text-sm">No activities logged yet.</p>
+            <p className="text-gray-200 text-sm">No activities logged yet.</p>
           ) : (
             <div className="space-y-4">
               {logs.map((log) => (
@@ -170,10 +173,10 @@ export default function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </article>
 
         {/* Gemini Insight */}
-        <div className="glass-panel p-6 relative overflow-hidden">
+        <article className="glass-panel p-6 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-accent-lime opacity-10 rounded-full blur-3xl"></div>
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
             <Zap className="text-accent-lime w-5 h-5" /> AI Insight
@@ -189,16 +192,16 @@ export default function Dashboard() {
             </>
           ) : (
             <>
-              <p className="text-mint text-sm leading-relaxed mb-4">
+              <p className="text-gray-200 text-sm leading-relaxed mb-4">
                 "No insights generated yet. Log more activities and head to the Insights page to get your personalized AI analysis!"
               </p>
-              <Link to="/insights" className="block text-center text-sm font-medium text-forest-dark bg-accent-green px-4 py-2 rounded-lg hover:bg-accent-lime transition-colors w-full">
+              <Link to="/insights" className="block text-center text-sm font-bold text-forest-dark bg-accent-green px-4 py-2 rounded-lg hover:bg-accent-lime transition-colors w-full" aria-label="Generate new Insight">
                 Generate Insight
               </Link>
             </>
           )}
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
   );
 }

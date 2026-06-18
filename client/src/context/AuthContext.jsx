@@ -4,6 +4,12 @@ const AuthContext = createContext();
 
 import { API_URL } from '../utils/api';
 
+/**
+ * Provides authentication state and methods to the application.
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components.
+ * @returns {JSX.Element} The AuthContext provider.
+ */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
@@ -80,6 +86,10 @@ export function AuthProvider({ children }) {
   );
 }
 
+/**
+ * Custom hook to access the authentication context.
+ * @returns {Object} The auth context containing user, token, loading state, and auth methods.
+ */
 export function useAuth() {
   return useContext(AuthContext);
 }

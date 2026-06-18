@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const logRoutes = require('./routes/logs');
 const insightRoutes = require('./routes/insights');
 const userRoutes = require('./routes/users');
@@ -16,6 +18,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Security Middlewares
+app.use(helmet());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+});
+app.use('/api/', apiLimiter);
 app.use('/api/logs', logRoutes);
 app.use('/api/insights', insightRoutes);
 app.use('/api/users', userRoutes);
